@@ -163,6 +163,9 @@ function App() {
         {/* HTTP Method Buttons */}
         <div className="card">
           <h2>HTTP Requests</h2>
+          <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '15px' }}>
+            Send a request through the entire service chain: Frontend → Backend → Upstream
+          </p>
           <div className="button-group">
             <button className="btn-get" onClick={() => makeRequest('GET')}>
               GET
@@ -182,6 +185,9 @@ function App() {
         {/* Continuous Request Mode */}
         <div className="card">
           <h2>Continuous Request Mode</h2>
+          <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '15px' }}>
+            Automatically send GET requests at regular intervals to test sustained load
+          </p>
           <div className="continuous-controls">
             <label>
               Interval (seconds):
