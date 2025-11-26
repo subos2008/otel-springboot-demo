@@ -22,14 +22,16 @@ A simple three-tier microservices demo application built with Java Spring Boot a
    - Request history tracking
 
 2. **Backend (Port 3001)**
-   - Spring Boot 3.1.5 + Java 21
+   - Spring Boot 2.7.6 + Java 17
+   - Apache Camel 3.11.5
    - Acts as a proxy/middleware between frontend and upstream
    - Transforms requests from `/api/frontend_to_backend` to `/api/backend_to_upstream`
    - Aggregates health information from upstream service
    - CORS enabled for frontend communication
 
 3. **Upstream (Port 3002)**
-   - Spring Boot 3.1.5 + Java 21
+   - Spring Boot 2.7.6 + Java 17
+   - Apache Camel 3.11.5
    - Provides timestamp data
    - Simple REST API endpoints
    - Health check endpoints
@@ -41,7 +43,7 @@ A simple three-tier microservices demo application built with Java Spring Boot a
 - Docker Compose 2.0+
 
 ### Running Locally
-- Java 21 or higher
+- Java 17
 - Maven 3.9+
 - Node.js 18+
 - npm or yarn
@@ -283,7 +285,7 @@ sprintboot-starter/
 - Ensure you're accessing the frontend at http://localhost:3000
 
 ### Maven build fails
-- Ensure Java 21+ is installed: `java -version`
+- Ensure Java 17 is installed: `java -version`
 - Try cleaning: `mvn clean`
 - Check internet connection for dependency downloads
 

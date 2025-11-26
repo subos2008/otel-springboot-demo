@@ -1,0 +1,17 @@
+# Development Dockerfile with hot reload support
+FROM maven:3.9-eclipse-temurin-17
+
+WORKDIR /app
+
+# Copy pom.xml first for dependency caching
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code (will be overridden by volume mount)
+COPY src ./src
+
+EXPOSE 3002
+
+# Run with Spring Boot DevTools enabled
+# Maven will watch for changes and recompile
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments='-Dspring.devtools.restart.enabled=true'"]

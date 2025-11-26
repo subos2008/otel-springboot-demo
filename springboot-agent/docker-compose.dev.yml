@@ -1,0 +1,114 @@
+version: '3.8'
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger-dev
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC receiver
+      - "4318:4318"    # OTLP HTTP receiver
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    networks:
+      - demo-network
+
+  upstream:
+    build:
+      context: ./upstream
+      dockerfile: Dockerfile.dev
+    container_name: demo-upstream-agent-dev
+    ports:
+      - "3002:3002"
+    volumes:
+      # Mount source code for hot reload
+      - ./upstream/src:/app/src
+      # Mount pom.xml in case dependencies change
+      - ./upstream/pom.xml:/app/pom.xml
+      # Mount OTel agent
+      - ./otel:/otel
+      # Use named volume for Maven cache to speed up builds
+      - maven-repo-upstream:/root/.m2
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s  # Increased for initial Maven build
+    environment:
+      - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_SERVICE_NAME=upstream
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+    depends_on:
+      - jaeger
+    networks:
+      - demo-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: demo-backend-agent-dev
+    ports:
+      - "3001:3001"
+    volumes:
+      # Mount source code for hot reload
+      - ./backend/src:/app/src
+      # Mount pom.xml in case dependencies change
+      - ./backend/pom.xml:/app/pom.xml
+      # Mount OTel agent
+      - ./otel:/otel
+      # Use named volume for Maven cache to speed up builds
+      - maven-repo-backend:/root/.m2
+    depends_on:
+      upstream:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s  # Increased for initial Maven build
+    environment:
+      - UPSTREAM_SERVICE_URL=http://upstream:3002
+      - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_SERVICE_NAME=backend
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_METRICS_EXPORTER=otlp
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+    networks:
+      - demo-network
+
+  frontend:
+    build: ./frontend
+    container_name: demo-frontend-agent-dev
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount source for Vite HMR
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.ts:/app/vite.config.ts
+    depends_on:
+      - backend
+    environment:
+      - VITE_BACKEND_URL=http://localhost:3001
+      - VITE_UPSTREAM_URL=http://localhost:3002
+    networks:
+      - demo-network
+
+networks:
+  demo-network:
+    driver: bridge
+
+volumes:
+  maven-repo-upstream:
+  maven-repo-backend:
