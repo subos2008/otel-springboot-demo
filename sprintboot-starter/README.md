@@ -22,14 +22,14 @@ A simple three-tier microservices demo application built with Java Spring Boot a
    - Request history tracking
 
 2. **Backend (Port 3001)**
-   - Spring Boot 3.1.5 + Java 18
+   - Spring Boot 3.1.5 + Java 21
    - Acts as a proxy/middleware between frontend and upstream
    - Transforms requests from `/api/frontend_to_backend` to `/api/backend_to_upstream`
    - Aggregates health information from upstream service
    - CORS enabled for frontend communication
 
 3. **Upstream (Port 3002)**
-   - Spring Boot 3.1.5 + Java 18
+   - Spring Boot 3.1.5 + Java 21
    - Provides timestamp data
    - Simple REST API endpoints
    - Health check endpoints
@@ -41,8 +41,8 @@ A simple three-tier microservices demo application built with Java Spring Boot a
 - Docker Compose 2.0+
 
 ### Running Locally
-- Java 18 or higher
-- Maven 3.6+
+- Java 21 or higher
+- Maven 3.9+
 - Node.js 18+
 - npm or yarn
 
@@ -270,7 +270,7 @@ sprintboot-starter/
 ### Services won't start
 - Ensure ports 3000, 3001, and 3002 are not in use
 - Check Docker is running (for Docker deployment)
-- Verify Java 18+ is installed (for local deployment)
+- Verify Java 21+ is installed (for local deployment)
 
 ### Backend can't connect to upstream
 - Verify upstream service is running
@@ -283,7 +283,7 @@ sprintboot-starter/
 - Ensure you're accessing the frontend at http://localhost:3000
 
 ### Maven build fails
-- Ensure Java 18+ is installed: `java -version`
+- Ensure Java 21+ is installed: `java -version`
 - Try cleaning: `mvn clean`
 - Check internet connection for dependency downloads
 
