@@ -1,6 +1,6 @@
-# CLAUDE.md - AI Assistant Guide
+# CLAUDE.md
 
-This file contains information for AI assistants working with this codebase.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
@@ -43,7 +43,7 @@ User Browser → Frontend (React) → Backend (Spring Boot) → Upstream (Spring
   - Request history (last 10)
 
 #### Backend (sprintboot-starter/backend/)
-- **Tech:** Spring Boot 3.1.5, Java 21, Maven
+- **Tech:** Spring Boot 2.7.6, Java 17, Maven, Apache Camel 3.11.5
 - **Port:** 3001
 - **Purpose:** Middleware/proxy that transforms and forwards requests
 - **Key Files:**
@@ -59,7 +59,7 @@ User Browser → Frontend (React) → Backend (Spring Boot) → Upstream (Spring
   - `UPSTREAM_SERVICE_URL` - URL of upstream service (default: http://localhost:3002)
 
 #### Upstream (sprintboot-starter/upstream/)
-- **Tech:** Spring Boot 3.1.5, Java 21, Maven
+- **Tech:** Spring Boot 2.7.6, Java 17, Maven, Apache Camel 3.11.5
 - **Port:** 3002
 - **Purpose:** Simple data service that returns timestamps
 - **Key Files:**
@@ -76,23 +76,23 @@ User Browser → Frontend (React) → Backend (Spring Boot) → Upstream (Spring
 ### Starting Services Locally
 
 **Prerequisites:**
-- Java 21 (installed via Homebrew: `brew install openjdk@21`)
-- Maven 3.9+ (installed via Homebrew: `brew install maven`)
-- Node.js 18+ (installed via Homebrew: `brew install node`)
+- Java 17 (install via Homebrew: `brew install openjdk@17`)
+- Maven 3.9+ (install via Homebrew: `brew install maven`)
+- Node.js 18+ (install via Homebrew: `brew install node`)
 
 **Start All Services (in separate terminals):**
 
 ```bash
 # Terminal 1 - Upstream
 cd sprintboot-starter/upstream
-export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"
-export JAVA_HOME="/opt/homebrew/opt/openjdk@21"
+export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
 mvn spring-boot:run
 
 # Terminal 2 - Backend
 cd sprintboot-starter/backend
-export PATH="/opt/homebrew/opt/openjdk@21/bin:$PATH"
-export JAVA_HOME="/opt/homebrew/opt/openjdk@21"
+export PATH="/opt/homebrew/opt/openjdk@17/bin:$PATH"
+export JAVA_HOME="/opt/homebrew/opt/openjdk@17"
 mvn spring-boot:run
 
 # Terminal 3 - Frontend
@@ -168,6 +168,16 @@ To trigger a reload, simply save any `.java` file or touch the application file:
 touch src/main/java/com/demo/backend/BackendApplication.java
 ```
 
+### Required Dependency Versions
+
+The project uses the following specific versions:
+- **Java:** 17
+- **Spring Boot:** 2.7.6
+- **Apache Camel:** 3.11.5
+- **Camel Spring Boot:** 3.11.5
+- **Camel CXF:** 3.11.5
+- **CXF WS Security:** 3.5.4
+
 ### Port Configuration
 
 - Frontend: 3000 (configurable in `vite.config.ts`)
@@ -230,7 +240,7 @@ touch src/main/java/com/demo/backend/BackendApplication.java
 **Solution:**
 1. Check internet connection
 2. Clear Maven cache: `rm -rf ~/.m2/repository`
-3. Verify Java version: `java -version` (should be 21+)
+3. Verify Java version: `java -version` (should be 17)
 
 ### Frontend Shows Services as DOWN
 
