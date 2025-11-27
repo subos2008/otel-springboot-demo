@@ -9,8 +9,8 @@ otel-sprintboot/
 ├── frontend/              # React UI with backend selector (port 3000)
 ├── upstream/              # Spring Boot data service (port 3002)
 ├── backends/
-│   ├── sprintboot-starter/   # No instrumentation (port 3010)
-│   └── springboot-agent/     # OpenTelemetry agent (port 3011)
+│   ├── sprintboot-starter/   # Spring Boot Starter instrumentation (port 3010)
+│   └── springboot-agent/     # OTEL Java Agent instrumentation (port 3011)
 ├── otel/                  # OpenTelemetry Java agent JAR
 └── docs/                  # Documentation
 ```
@@ -28,7 +28,7 @@ docker-compose -f docker-compose.dev.yml up --build
 open http://localhost:3000
 ```
 
-Frontend includes backend selector to toggle between instrumented/non-instrumented backends.
+Frontend includes backend selector to toggle between two OpenTelemetry instrumentation approaches.
 
 ## Services
 
@@ -36,8 +36,8 @@ Frontend includes backend selector to toggle between instrumented/non-instrument
 |---------|------|-------------|
 | Frontend | 3000 | React UI with backend selector |
 | Upstream | 3002 | Data service (shared) - echos data back to the backend |
-| Backend Starter | 3010 | Baseline, no instrumentation |
-| Backend Agent | 3011 | OpenTelemetry auto-instrumentation |
+| Backend Starter | 3010 | Spring Boot Starter (manual instrumentation) |
+| Backend Agent | 3011 | OTEL Java Agent (automatic instrumentation) |
 
 ## Architecture
 
@@ -52,9 +52,14 @@ Frontend (3000)
 
 ## Backend Versions
 
-**Starter** - Baseline HTTP microservices without observability.
+**Starter** - OpenTelemetry Spring Boot Starter (manual instrumentation):
+- Code-based instrumentation via Spring libraries
+- @WithSpan annotations for custom spans
+- RestTemplateBuilder for context propagation
+- Manual span manipulation with Span API
+- OTLP export to Honeycomb
 
-**Agent** - Automatic OpenTelemetry instrumentation via Java agent:
+**Agent** - OpenTelemetry Java Agent (automatic instrumentation):
 - Auto-instrumented HTTP spans
 - Context propagation
 - OTLP export to Honeycomb
@@ -81,7 +86,7 @@ See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for development workflow.
 
 - Java 17, Spring Boot 2.7.6
 - React 18, TypeScript, Vite
-- OpenTelemetry Java Agent
+- OpenTelemetry Java Agent & Spring Boot Starter
 - Apache Camel 3.11.5
 - Docker Compose
 

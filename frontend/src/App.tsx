@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 
 const BACKENDS = {
-  starter: { url: 'http://localhost:3010', name: 'Starter (No Instrumentation)' },
-  agent: { url: 'http://localhost:3011', name: 'Agent (OpenTelemetry)' },
+  starter: { url: 'http://localhost:3010', name: 'Spring Boot Starter (Manual)' },
+  agent: { url: 'http://localhost:3011', name: 'OTEL Java Agent (Automatic)' },
 }
 
 const UPSTREAM_URL = 'http://localhost:3002'
@@ -150,7 +150,7 @@ function App() {
         <div className="card" style={{ gridColumn: 'span 2' }}>
           <h2>Backend Version</h2>
           <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '15px' }}>
-            Choose which backend implementation to test
+            Both backends are instrumented with OpenTelemetry. Choose which instrumentation approach to test.
           </p>
           <div className="button-group">
             <button
@@ -178,14 +178,14 @@ function App() {
           <h2>Service Health</h2>
           <div className="health-status">
             <div className={`health-item health-${health.backend.toLowerCase()}`}>
-              <div>Backend</div>
+              <div>Backend (port {new URL(BACKEND_URL).port})</div>
               <div style={{ fontSize: '0.9rem', marginTop: '5px' }}>
                 {health.backend}
                 {health.backendResponseTime && ` (${health.backendResponseTime}ms)`}
               </div>
             </div>
             <div className={`health-item health-${health.upstream.toLowerCase()}`}>
-              <div>Upstream</div>
+              <div>Upstream (port {new URL(UPSTREAM_URL).port})</div>
               <div style={{ fontSize: '0.9rem', marginTop: '5px' }}>
                 {health.upstream}
                 {health.upstreamResponseTime && ` (${health.upstreamResponseTime}ms)`}

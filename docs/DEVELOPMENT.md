@@ -15,8 +15,8 @@ docker-compose -f docker-compose.dev.yml up -d --build
 This will start:
 - **Frontend** (port 3000) - React with Vite HMR
 - **Upstream** (port 3002) - Spring Boot with DevTools
-- **Backend Starter** (port 3010) - Spring Boot without instrumentation
-- **Backend Agent** (port 3011) - Spring Boot with OpenTelemetry agent
+- **Backend Starter** (port 3010) - Spring Boot Starter (manual instrumentation)
+- **Backend Agent** (port 3011) - OTEL Java Agent (automatic instrumentation)
 
 ## How Hot Reload Works
 
@@ -72,11 +72,11 @@ This will start:
 
 ### Working with Both Backend Versions
 
-The frontend includes a backend selector that lets you test both versions:
+The frontend includes a backend selector that lets you test both instrumentation approaches:
 
 1. **Open frontend**: http://localhost:3000
-2. **Click "Starter (No Instrumentation)"** - Routes to port 3010
-3. **Click "Agent (OpenTelemetry)"** - Routes to port 3011
+2. **Click "Spring Boot Starter (Manual)"** - Routes to port 3010
+3. **Click "OTEL Java Agent (Automatic)"** - Routes to port 3011
 4. **Make requests** - See how both backends behave
 
 ## OpenTelemetry Development (Backend Agent)
@@ -128,8 +128,8 @@ Save, wait 3 seconds, test, and see it in Honeycomb!
 |---------|------|-----|---------|
 | Frontend | 3000 | http://localhost:3000 | React UI with backend selector |
 | Upstream | 3002 | http://localhost:3002/api/backend_to_upstream | Data service |
-| Backend Starter | 3010 | http://localhost:3010/api/frontend_to_backend | Baseline (no instrumentation) |
-| Backend Agent | 3011 | http://localhost:3011/api/frontend_to_backend | OpenTelemetry instrumented |
+| Backend Starter | 3010 | http://localhost:3010/api/frontend_to_backend | Spring Boot Starter (manual) |
+| Backend Agent | 3011 | http://localhost:3011/api/frontend_to_backend | OTEL Java Agent (automatic) |
 
 ### Health Checks
 ```bash
@@ -362,9 +362,9 @@ docker system prune -a
 ```
 otel-sprintboot/
 ├── backends/
-│   ├── sprintboot-starter/       # Backend without instrumentation
+│   ├── sprintboot-starter/       # Spring Boot Starter (manual instrumentation)
 │   │   └── src/main/java/...
-│   └── springboot-agent/         # Backend with OpenTelemetry
+│   └── springboot-agent/         # OTEL Java Agent (automatic instrumentation)
 │       └── src/main/java/...
 ├── upstream/
 │   └── src/main/java/...         # Upstream data service

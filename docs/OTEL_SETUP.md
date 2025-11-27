@@ -8,19 +8,15 @@ This project uses a centralized `.env` file at the repository root to configure 
 ```
 otel-sprintboot/
 ├── .env                          # Root configuration (Honeycomb settings)
-├── springboot-agent/
-│   ├── .env -> ../.env          # Symlink to root .env
-│   ├── docker-compose.yml
-│   └── docker-compose.dev.yml
-└── sprintboot-starter/
-    └── .env -> ../.env          # Symlink to root .env
+├── docker-compose.yml            # Production compose file
+└── docker-compose.dev.yml        # Development compose file
 ```
 
-### Symlinks
-The subdirectories use **symlinks** to the root `.env` file:
-- ✅ **Single source of truth** - Edit once, applies everywhere
-- ✅ **No duplication** - Changes automatically propagate
-- ✅ **Git-friendly** - Symlinks are version-controlled
+### Centralized Configuration
+The `.env` file at the repository root is used by both docker-compose files:
+- ✅ **Single source of truth** - Edit once, applies to all services
+- ✅ **No duplication** - One file for all OpenTelemetry settings
+- ✅ **Git-friendly** - .env is gitignored, .env.example provides template
 
 ## Current Configuration
 
@@ -42,15 +38,15 @@ OTEL_RESOURCE_ATTRIBUTES=deployment.environment=local
 ```
 
 Each service sets its own `OTEL_SERVICE_NAME` in docker-compose files:
-- **Backend**: `OTEL_SERVICE_NAME=backend`
-- **Upstream**: `OTEL_SERVICE_NAME=upstream`
+- **Backend Starter**: `OTEL_SERVICE_NAME=backend` (Spring Boot Starter)
+- **Backend Agent**: `OTEL_SERVICE_NAME=backend` (OTEL Java Agent)
+- **Upstream**: `OTEL_SERVICE_NAME=upstream` (not instrumented)
 
 ## Verify Configuration
 
 Check that Docker Compose reads the `.env` file correctly:
 
 ```bash
-cd springboot-agent
 docker-compose config | grep OTEL_EXPORTER
 
 # Expected output:
@@ -63,11 +59,10 @@ docker-compose config | grep OTEL_EXPORTER
 ### Using Honeycomb (Current)
 Already configured! Just run:
 ```bash
-cd springboot-agent
 docker-compose up
 ```
 
-Traces appear in: https://ui.honeycomb.io
+Both backend versions export traces to Honeycomb: https://ui.honeycomb.io
 
 ### Using Local Jaeger
 To test locally with Jaeger:
@@ -128,9 +123,10 @@ OTEL_EXPORTER_OTLP_HEADERS=lightstep-access-token=YOUR_TOKEN
 ### Service-Specific Variables (from docker-compose.yml)
 | Variable | Description | Set Per Service |
 |----------|-------------|-----------------|
-| `OTEL_SERVICE_NAME` | Service identifier | `backend`, `upstream` |
-| `JAVA_TOOL_OPTIONS` | Java agent path | `-javaagent:/otel/...` |
+| `OTEL_SERVICE_NAME` | Service identifier | `backend` (both backends), `upstream` |
+| `JAVA_TOOL_OPTIONS` | Java agent path | `-javaagent:/otel/...` (agent only) |
 | `UPSTREAM_SERVICE_URL` | Backend→Upstream URL | `http://upstream:3002` |
+| `OTEL_RESOURCE_ATTRIBUTES` | Per-service tags | `instrumentation.type=spring-boot-starter` or `java-agent` |
 
 ## Security Best Practices
 
@@ -163,35 +159,17 @@ git commit -m "Add .env template"
 
 ### Variables not being picked up?
 
-1. **Check symlinks exist**:
-   ```bash
-   ls -la springboot-agent/.env
-   # Should show: .env -> ../.env
-   ```
-
-2. **Verify .env format** (no `export` keyword):
+1. **Verify .env format** (no `export` keyword):
    ```bash
    cat .env
    # Should be: VARIABLE=value
    # NOT: export VARIABLE=value
    ```
 
-3. **Restart containers**:
+2. **Restart containers**:
    ```bash
    docker-compose down && docker-compose up
    ```
-
-### Symlinks not working on Windows?
-
-Windows may require developer mode for symlinks. Alternative:
-
-```bash
-# Copy .env instead of symlinking
-cp .env springboot-agent/.env
-cp .env sprintboot-starter/.env
-```
-
-**Note**: You'll need to update multiple files when configuration changes.
 
 ### Traces not appearing?
 

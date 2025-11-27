@@ -29,6 +29,15 @@ services:
       start_period: 30s
     environment:
       - UPSTREAM_SERVICE_URL=http://upstream:3002
+      # OpenTelemetry configuration for Spring Boot Starter instrumentation
+      - OTEL_SERVICE_NAME=backend
+      - OTEL_TRACES_EXPORTER=${OTEL_TRACES_EXPORTER}
+      - OTEL_METRICS_EXPORTER=${OTEL_METRICS_EXPORTER}
+      - OTEL_LOGS_EXPORTER=${OTEL_LOGS_EXPORTER}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_EXPORTER_OTLP_PROTOCOL}
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
+      - OTEL_RESOURCE_ATTRIBUTES=app.version=backend-starter,instrumentation.type=spring-boot-starter,${OTEL_RESOURCE_ATTRIBUTES}
     networks:
       - demo-network
 

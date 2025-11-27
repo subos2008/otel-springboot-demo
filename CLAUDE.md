@@ -324,3 +324,4 @@ When creating new versions:
 - When adding features, maintain the simple, educational nature of the code
 - Test changes manually using curl and the browser UI
 - Keep documentation fairly succinct, suitable for experienced developers and AIs to read
+- The purpose of this codebase is to learn how to instrument with OTEL Springboot Starter so add comments to the code about design descisions/gotchas/special cases etc around that.

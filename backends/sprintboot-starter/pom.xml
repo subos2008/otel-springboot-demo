@@ -24,6 +24,19 @@
         <cxf.version>3.5.4</cxf.version>
     </properties>
 
+    <!-- OpenTelemetry BOM (Bill of Materials) manages versions for all OTel dependencies -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom</artifactId>
+                <version>2.22.0</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -60,6 +73,28 @@
             <groupId>org.apache.cxf</groupId>
             <artifactId>cxf-rt-ws-security</artifactId>
             <version>${cxf.version}</version>
+        </dependency>
+
+        <!-- OpenTelemetry Spring Boot Starter - Manual instrumentation via Spring Boot -->
+        <!-- This provides automatic instrumentation of Spring MVC, RestTemplate, and more -->
+        <!-- Version managed by opentelemetry-instrumentation-bom -->
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Spring AOP - Required for @WithSpan annotation support -->
+        <!-- Allows declarative span creation on methods -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- Kotlin stdlib - Required by OpenTelemetry's OkHttp dependency -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+            <version>2.0.0</version>
         </dependency>
     </dependencies>
 

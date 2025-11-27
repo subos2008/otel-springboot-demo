@@ -1,23 +1,19 @@
-# Multi-stage build for React frontend
-
-# Stage 1: Build
-FROM node:18-alpine AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-# Stage 2: Runtime
+# Development Dockerfile for React frontend with Vite HMR
 FROM node:18-alpine
+
 WORKDIR /app
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/package*.json ./
-RUN npm install --production
 
-# Install serve to serve the built files
-RUN npm install -g serve
+# Copy package files
+COPY package*.json ./
 
+# Install all dependencies (including dev dependencies)
+RUN npm install
+
+# Copy source files
+COPY . .
+
+# Expose Vite dev server port
 EXPOSE 3000
 
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Run Vite dev server with hot reload
+CMD ["npm", "run", "dev"]
