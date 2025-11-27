@@ -35,7 +35,7 @@ function App() {
   })
   const [history, setHistory] = useState<RequestHistoryItem[]>([])
   const [isRunning, setIsRunning] = useState(false)
-  const [interval, setInterval] = useState(5)
+  const [requestInterval, setRequestInterval] = useState(5)
   const [requestCount, setRequestCount] = useState(0)
   const intervalRef = useRef<number | null>(null)
 
@@ -65,8 +65,8 @@ function App() {
   // Initial health check and periodic updates
   useEffect(() => {
     checkHealth()
-    const healthInterval = setInterval(checkHealth, 5000)
-    return () => clearInterval(healthInterval)
+    const healthInterval = window.setInterval(checkHealth, 5000)
+    return () => window.clearInterval(healthInterval)
   }, [])
 
   // Make API request
@@ -122,14 +122,14 @@ function App() {
     intervalRef.current = window.setInterval(() => {
       makeRequest('GET')
       setRequestCount((prev) => prev + 1)
-    }, interval * 1000)
+    }, requestInterval * 1000)
   }
 
   // Stop continuous requests
   const stopContinuous = () => {
     setIsRunning(false)
     if (intervalRef.current) {
-      clearInterval(intervalRef.current)
+      window.clearInterval(intervalRef.current)
       intervalRef.current = null
     }
   }
@@ -194,8 +194,8 @@ function App() {
               <input
                 type="number"
                 min="1"
-                value={interval}
-                onChange={(e) => setInterval(Number(e.target.value))}
+                value={requestInterval}
+                onChange={(e) => setRequestInterval(Number(e.target.value))}
                 disabled={isRunning}
               />
             </label>
