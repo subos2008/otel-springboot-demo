@@ -1,0 +1,81 @@
+services:
+  upstream:
+    build: ./upstream
+    container_name: demo-upstream
+    ports:
+      - "3002:3002"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - demo-network
+
+  backend-starter:
+    build: ./backends/sprintboot-starter
+    container_name: demo-backend-starter
+    ports:
+      - "3010:3010"
+    depends_on:
+      upstream:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3010/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    environment:
+      - UPSTREAM_SERVICE_URL=http://upstream:3002
+    networks:
+      - demo-network
+
+  backend-agent:
+    build: ./backends/springboot-agent
+    container_name: demo-backend-agent
+    ports:
+      - "3011:3011"
+    depends_on:
+      upstream:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3011/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    volumes:
+      - ./otel:/otel
+    environment:
+      - UPSTREAM_SERVICE_URL=http://upstream:3002
+      - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_SERVICE_NAME=backend
+      - OTEL_TRACES_EXPORTER=${OTEL_TRACES_EXPORTER}
+      - OTEL_METRICS_EXPORTER=${OTEL_METRICS_EXPORTER}
+      - OTEL_LOGS_EXPORTER=${OTEL_LOGS_EXPORTER}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_EXPORTER_OTLP_PROTOCOL}
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
+      - OTEL_RESOURCE_ATTRIBUTES=app.version=backend-agent,instrumentation.type=java-agent,${OTEL_RESOURCE_ATTRIBUTES}
+    networks:
+      - demo-network
+
+  frontend:
+    build: ./frontend
+    container_name: demo-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend-starter
+      - backend-agent
+    environment:
+      - VITE_BACKEND_URL=http://localhost:3010
+      - VITE_UPSTREAM_URL=http://localhost:3002
+    networks:
+      - demo-network
+
+networks:
+  demo-network:
+    driver: bridge

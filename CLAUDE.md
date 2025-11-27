@@ -323,3 +323,4 @@ When creating new versions:
 - Health checks are critical for demo purposes - keep them working
 - When adding features, maintain the simple, educational nature of the code
 - Test changes manually using curl and the browser UI
+- Keep documentation fairly succinct, suitable for experienced developers and AIs to read

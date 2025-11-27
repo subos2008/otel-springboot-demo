@@ -1,113 +1,93 @@
 # OpenTelemetry Spring Boot Demo
 
-This repository contains multiple versions of a Spring Boot microservices demo application, designed to demonstrate observability patterns and OpenTelemetry instrumentation.
+Multi-version Spring Boot microservices demonstrating OpenTelemetry instrumentation patterns.
 
-## Project Versions
+## Structure
 
-### 1. sprintboot-starter
-The base implementation with three microservices:
-- React frontend (port 3000)
-- Spring Boot backend service (port 3001)
-- Spring Boot upstream service (port 3002)
-
-This version demonstrates basic HTTP communication patterns between services without any observability instrumentation.
-
-**Features:**
-- HTTP method testing (GET, POST, PUT, DELETE)
-- Continuous request mode
-- Health monitoring dashboard
-- Request history tracking
-
-👉 **[Get Started with sprintboot-starter](./sprintboot-starter/README.md)**
-
-### Future Versions
-Additional versions will be added to demonstrate:
-- OpenTelemetry auto-instrumentation
-- Custom instrumentation
-- Distributed tracing
-- Metrics collection
-- Advanced observability patterns
+```
+otel-sprintboot/
+├── frontend/              # React UI with backend selector (port 3000)
+├── upstream/              # Spring Boot data service (port 3002)
+├── backends/
+│   ├── sprintboot-starter/   # No instrumentation (port 3010)
+│   └── springboot-agent/     # OpenTelemetry agent (port 3011)
+├── otel/                  # OpenTelemetry Java agent JAR
+└── docs/                  # Documentation
+```
 
 ## Quick Start
 
 ```bash
-# Navigate to the starter version
-cd sprintboot-starter
-
-# Start all services with Docker
+# Production
 docker-compose up --build
 
-# Access the frontend
+# Development (hot reload)
+docker-compose -f docker-compose.dev.yml up --build
+
+# Access
 open http://localhost:3000
 ```
 
-## Repository Structure
+Frontend includes backend selector to toggle between instrumented/non-instrumented backends.
 
-```
-otel-sprintboot/
-├── README.md                           # This file
-├── docs/
-│   ├── project-genesis-prompt.md       # Original project specification
-│   └── implementation-plan.md          # Detailed implementation plan
-└── sprintboot-starter/                 # Version 1: Basic implementation
-    ├── README.md                       # Detailed documentation
-    ├── docker-compose.yml
-    ├── frontend/                       # React SPA
-    ├── backend/                        # Spring Boot proxy service
-    └── upstream/                       # Spring Boot timestamp service
-```
+## Services
+
+| Service | Port | Description |
+|---------|------|-------------|
+| Frontend | 3000 | React UI with backend selector |
+| Upstream | 3002 | Data service (shared) - echos data back to the backend |
+| Backend Starter | 3010 | Baseline, no instrumentation |
+| Backend Agent | 3011 | OpenTelemetry auto-instrumentation |
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                      Frontend (React)                    │
-│                       Port 3000                          │
-└────────────────┬────────────────────────────────────────┘
-                 │ HTTP Requests
-                 ▼
-┌─────────────────────────────────────────────────────────┐
-│                  Backend Service (Spring Boot)           │
-│                       Port 3001                          │
-│  - Receives requests from frontend                       │
-│  - Transforms and forwards to upstream                   │
-│  - Aggregates health information                         │
-└────────────────┬────────────────────────────────────────┘
-                 │ HTTP Requests
-                 ▼
-┌─────────────────────────────────────────────────────────┐
-│                 Upstream Service (Spring Boot)           │
-│                       Port 3002                          │
-│  - Returns timestamp data                                │
-│  - Simple REST endpoints                                 │
-└─────────────────────────────────────────────────────────┘
+Frontend (3000)
+    │
+    ├─→ Backend Starter (3010) ─→ Upstream (3002)
+    └─→ Backend Agent (3011) ───→ Upstream (3002)
+                │
+                └─→ Honeycomb (traces)
 ```
 
-## Prerequisites
+## Backend Versions
 
-- **Docker & Docker Compose** (recommended)
-  - Docker 20.10+
-  - Docker Compose 2.0+
+**Starter** - Baseline HTTP microservices without observability.
 
-- **Local Development**
-  - Java 18+
-  - Maven 3.6+
-  - Node.js 18+
+**Agent** - Automatic OpenTelemetry instrumentation via Java agent:
+- Auto-instrumented HTTP spans
+- Context propagation
+- OTLP export to Honeycomb
+- Zero code changes required
+
+## Configuration
+
+OpenTelemetry settings in `.env`:
+```bash
+OTEL_EXPORTER_OTLP_ENDPOINT=https://api.honeycomb.io
+OTEL_EXPORTER_OTLP_HEADERS=x-honeycomb-team=YOUR_API_KEY
+OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+```
+
+See [docs/OTEL_SETUP.md](docs/OTEL_SETUP.md) for configuration details.
+
+## Development
+
+Hot reload enabled with Spring DevTools + Vite HMR.
+
+See [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for development workflow.
+
+## Tech Stack
+
+- Java 17, Spring Boot 2.7.6
+- React 18, TypeScript, Vite
+- OpenTelemetry Java Agent
+- Apache Camel 3.11.5
+- Docker Compose
 
 ## Documentation
 
-- [Project Genesis Prompt](./docs/project-genesis-prompt.md) - Original project requirements
-- [Implementation Plan](./docs/implementation-plan.md) - Detailed technical specifications
-- [Starter Version README](./sprintboot-starter/README.md) - Setup and usage instructions
-
-## Contributing
-
-This is a demo project for learning and experimentation. Feel free to:
-- Explore the code
-- Modify the services
-- Add new features
-- Create new versions with different instrumentation approaches
-
-## License
-
-Educational and demonstration purposes.
+- [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) - Hot reload workflow
+- [docs/OTEL_SETUP.md](docs/OTEL_SETUP.md) - OpenTelemetry configuration
+- [docs/implementation-plan.md](docs/implementation-plan.md) - Technical specs
+- [CLAUDE.md](CLAUDE.md) - AI assistant guide
