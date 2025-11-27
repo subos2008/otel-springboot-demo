@@ -1,18 +1,4 @@
-version: '3.8'
-
 services:
-  jaeger:
-    image: jaegertracing/all-in-one:latest
-    container_name: jaeger
-    ports:
-      - "16686:16686"  # Jaeger UI
-      - "4317:4317"    # OTLP gRPC receiver
-      - "4318:4318"    # OTLP HTTP receiver
-    environment:
-      - COLLECTOR_OTLP_ENABLED=true
-    networks:
-      - demo-network
-
   upstream:
     build: ./upstream
     container_name: demo-upstream-agent
@@ -29,13 +15,13 @@ services:
     environment:
       - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
       - OTEL_SERVICE_NAME=upstream
-      - OTEL_TRACES_EXPORTER=otlp
-      - OTEL_METRICS_EXPORTER=otlp
-      - OTEL_LOGS_EXPORTER=none
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-    depends_on:
-      - jaeger
+      - OTEL_TRACES_EXPORTER=${OTEL_TRACES_EXPORTER}
+      - OTEL_METRICS_EXPORTER=${OTEL_METRICS_EXPORTER}
+      - OTEL_LOGS_EXPORTER=${OTEL_LOGS_EXPORTER}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_EXPORTER_OTLP_PROTOCOL}
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
+      - OTEL_RESOURCE_ATTRIBUTES=app.version=springboot-agent,instrumentation.type=java-agent,${OTEL_RESOURCE_ATTRIBUTES}
     networks:
       - demo-network
 
@@ -59,11 +45,13 @@ services:
       - UPSTREAM_SERVICE_URL=http://upstream:3002
       - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
       - OTEL_SERVICE_NAME=backend
-      - OTEL_TRACES_EXPORTER=otlp
-      - OTEL_METRICS_EXPORTER=otlp
-      - OTEL_LOGS_EXPORTER=none
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_TRACES_EXPORTER=${OTEL_TRACES_EXPORTER}
+      - OTEL_METRICS_EXPORTER=${OTEL_METRICS_EXPORTER}
+      - OTEL_LOGS_EXPORTER=${OTEL_LOGS_EXPORTER}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_EXPORTER_OTLP_PROTOCOL}
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
+      - OTEL_RESOURCE_ATTRIBUTES=app.version=springboot-agent,instrumentation.type=java-agent,${OTEL_RESOURCE_ATTRIBUTES}
     networks:
       - demo-network
 

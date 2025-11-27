@@ -17,7 +17,7 @@ docker-compose -f docker-compose.dev.yml up -d --build
 This version includes:
 - ✅ All hot reload features from the starter version
 - ✅ **OpenTelemetry Java Agent** for automatic instrumentation
-- ✅ **Jaeger** for trace visualization
+- ✅ **Honeycomb integration** for trace visualization
 - ✅ Hot reload works with the agent attached!
 
 ## How Hot Reload Works
@@ -37,13 +37,13 @@ This version includes:
 
 ## Viewing Traces While Developing
 
-One of the best parts of this setup: you can **see your changes in Jaeger immediately**!
+One of the best parts of this setup: you can **see your changes in Honeycomb immediately**!
 
-1. **Open Jaeger UI**: http://localhost:16686
+1. **Open Honeycomb UI**: https://ui.honeycomb.io
 2. **Make a code change** (e.g., add a log statement, change a response)
 3. **Save the file** - Wait 2-5 seconds for reload
 4. **Trigger a request**: http://localhost:3000
-5. **Refresh Jaeger** - See your new traces with changes
+5. **Refresh Honeycomb** - See your new traces with changes
 
 ### Example: Adding Custom Spans
 
@@ -85,8 +85,8 @@ One of the best parts of this setup: you can **see your changes in Jaeger immedi
    # Make a request
    curl http://localhost:3001/api/frontend_to_backend
 
-   # View in Jaeger
-   open http://localhost:16686
+   # View in Honeycomb
+   open https://ui.honeycomb.io
    ```
 
 4. **See instrumentation** - The OpenTelemetry agent automatically:
@@ -101,7 +101,7 @@ One of the best parts of this setup: you can **see your changes in Jaeger immedi
 - **Frontend**: http://localhost:3000
 - **Backend API**: http://localhost:3001
 - **Upstream API**: http://localhost:3002
-- **Jaeger UI**: http://localhost:16686
+- **Honeycomb UI**: https://ui.honeycomb.io
 
 ### Check Service Health
 ```bash
@@ -126,8 +126,8 @@ docker-compose -f docker-compose.dev.yml up
 # 4. Wait 2-5 seconds, then test
 curl http://localhost:3001/api/frontend_to_backend
 
-# 5. View traces in Jaeger
-open http://localhost:16686
+# 5. View traces in Honeycomb
+open https://ui.honeycomb.io
 
 # 6. Repeat steps 2-5 as needed
 ```
@@ -171,23 +171,18 @@ The dev setup uses Docker volumes to cache Maven dependencies:
 - First build: Slow (~2-3 minutes)
 - Subsequent reloads: Fast (~2-5 seconds)
 
-### Jaeger Performance
-With hot reload and frequent testing, Jaeger can collect many traces. To keep it responsive:
-
-```bash
-# Restart Jaeger to clear traces
-docker-compose -f docker-compose.dev.yml restart jaeger
-```
+### Honeycomb Performance
+With hot reload and frequent testing, you'll generate many traces in Honeycomb. Use Honeycomb's filtering to focus on recent traces or specific queries.
 
 ### Viewing Logs
 
 ```bash
-# All services (including Jaeger)
+# All services
 docker-compose -f docker-compose.dev.yml logs -f
 
 # Specific service
 docker-compose -f docker-compose.dev.yml logs -f backend
-docker-compose -f docker-compose.dev.yml logs -f jaeger
+docker-compose -f docker-compose.dev.yml logs -f upstream
 
 # Filter for OpenTelemetry agent messages
 docker-compose -f docker-compose.dev.yml logs backend | grep -i otel
@@ -216,14 +211,14 @@ docker-compose -f docker-compose.dev.yml logs backend | grep -i "opentelemetry"
 ```
 You should see agent initialization messages.
 
-**Verify traces in Jaeger:**
-1. Open http://localhost:16686
-2. Select service: `backend`
-3. Click "Find Traces"
-4. If no traces appear, check Jaeger logs:
-   ```bash
-   docker-compose -f docker-compose.dev.yml logs jaeger
-   ```
+**Verify traces in Honeycomb:**
+1. Open https://ui.honeycomb.io
+2. Select your environment/dataset
+3. Query for traces from `backend` or `upstream` services
+4. If no traces appear, check:
+   - Service logs for OTLP export messages
+   - Your Honeycomb API key in `.env`
+   - Network connectivity from containers
 
 ### Hot reload not working?
 
@@ -276,7 +271,7 @@ This is rare, but if the agent interferes with DevTools:
 | **Startup time** | Fast (~30 sec) | Slow (~2-3 min first time) |
 | **Hot reload** | ❌ No | ✅ Yes |
 | **OpenTelemetry** | ✅ Yes | ✅ Yes |
-| **Jaeger** | ✅ Yes | ✅ Yes |
+| **Honeycomb** | ✅ Yes | ✅ Yes |
 | **Code changes** | Requires rebuild | Auto-reloads |
 | **Image size** | Optimized | Large (includes Maven) |
 | **Use case** | Production-like | Development |
@@ -296,8 +291,8 @@ docker-compose -f docker-compose.dev.yml ps
 # Execute command in running container
 docker-compose -f docker-compose.dev.yml exec backend bash
 
-# View Jaeger traces for a service
-# http://localhost:16686 → Select "backend" → Find Traces
+# View traces in Honeycomb
+# https://ui.honeycomb.io → Query for your services
 
 # Clean everything
 docker-compose -f docker-compose.dev.yml down -v
@@ -326,4 +321,4 @@ public Map<String, Object> handleGet() {
 }
 ```
 
-Save, wait 3 seconds, test, and see it in Jaeger!
+Save, wait 3 seconds, test, and see it in Honeycomb!
