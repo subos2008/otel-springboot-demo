@@ -1,30 +1,32 @@
 package com.demo.backend;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.instrumentation.annotations.SpanAttribute;
 import io.opentelemetry.instrumentation.annotations.WithSpan;
+import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Backend Controller - Demonstrates OpenTelemetry Spring Boot Starter instrumentation
+ * Backend Controller - Demonstrates Apache Camel with OpenTelemetry instrumentation
  *
- * This controller showcases different levels of instrumentation:
- * 1. Automatic instrumentation via Spring Boot Starter (no code changes)
- * 2. Enhanced instrumentation using @WithSpan annotation
- * 3. Manual span manipulation using the OpenTelemetry API
+ * This controller showcases:
+ * 1. Apache Camel integration for routing patterns
+ * 2. ProducerTemplate for sending messages to Camel routes
+ * 3. Automatic OpenTelemetry tracing via camel-opentelemetry
+ * 4. Enhanced instrumentation using @WithSpan annotation
+ * 5. Manual span manipulation using the OpenTelemetry API
  *
- * The Spring Boot Starter automatically instruments:
- * - All @RequestMapping endpoints (creates server spans)
- * - RestTemplate calls (creates client spans with context propagation)
- * - Exception handling (records exceptions in spans)
+ * The camel-opentelemetry component automatically instruments:
+ * - All Camel routes (creates spans for each route step)
+ * - HTTP component calls (creates client spans with context propagation)
+ * - Route exchanges (propagates trace context)
  */
 @RestController
 @RequestMapping("/api")
@@ -32,10 +34,10 @@ import java.util.Map;
 public class BackendController {
 
     @Autowired
-    private RestTemplate restTemplate;
+    private ProducerTemplate producerTemplate;
 
-    @Value("${upstream.service.url}")
-    private String upstreamUrl;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @GetMapping("/frontend_to_backend")
     public ResponseEntity<Map<String, Object>> getRequest() {
@@ -58,30 +60,25 @@ public class BackendController {
     }
 
     /**
-     * Proxies requests to the upstream service with OpenTelemetry instrumentation.
+     * Proxies requests to the upstream service using Apache Camel with OpenTelemetry instrumentation.
      *
-     * DEMONSTRATION OF @WithSpan ANNOTATION:
+     * DEMONSTRATION OF APACHE CAMEL INTEGRATION:
      *
-     * The @WithSpan annotation creates a custom child span within the automatically-created
-     * server span. This is useful when you want to:
-     * - Break down a request handler into logical operations
-     * - Add custom span names that are more descriptive than method names
-     * - Capture specific attributes about the operation
+     * This method uses Camel's ProducerTemplate to send messages to a Camel route instead of
+     * using RestTemplate directly. This showcases:
+     * - Decoupling HTTP logic from controller code
+     * - Enterprise Integration Patterns (EIP) via Camel routes
+     * - Automatic tracing of Camel routes via camel-opentelemetry
+     * - Message-based communication patterns
      *
-     * The @SpanAttribute annotation automatically adds method parameters to the span as attributes.
-     * This helps with debugging and filtering traces in Honeycomb.
-     *
-     * Without @WithSpan:
-     * - Spring Boot Starter still creates a span for the @GetMapping endpoint
-     * - RestTemplate call creates a client span automatically
-     *
-     * With @WithSpan:
-     * - An additional "proxy-request" span is created
-     * - HTTP method and payload are captured as span attributes
-     * - You get more granular visibility into the request processing
+     * The @WithSpan annotation creates a custom child span for additional visibility.
+     * Camel's OpenTelemetry integration creates additional spans for:
+     * - Route processing (direct:proxyRequest)
+     * - HTTP client calls (to upstream)
+     * - Each step in the route pipeline
      *
      * Note: This method also demonstrates manual span manipulation using Span.current()
-     * for adding custom events and attributes beyond what annotations provide.
+     * for adding custom events and attributes beyond what Camel automatically provides.
      */
     @WithSpan("proxy-request")
     private ResponseEntity<Map<String, Object>> proxyRequest(
@@ -89,66 +86,67 @@ public class BackendController {
             @SpanAttribute("request.payload") Map<String, Object> payload) {
 
         // Get the current span for manual instrumentation
-        // The Spring Boot Starter makes this span available in the current context
         Span currentSpan = Span.current();
 
         try {
-            String url = upstreamUrl + "/api/backend_to_upstream";
-
             // Add a custom attribute to the current span
-            // This is useful for capturing business logic details
-            currentSpan.setAttribute("upstream.url", url);
+            currentSpan.setAttribute("camel.route", "direct:proxyRequest");
 
-            // Add an event to mark the start of the upstream call
-            // Events are timestamped annotations that help track request lifecycle
-            currentSpan.addEvent("starting-upstream-call");
+            // Add an event to mark the start of the Camel route call
+            currentSpan.addEvent("starting-camel-route");
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
+            // Prepare headers for Camel route
+            Map<String, Object> headers = new HashMap<>();
+            headers.put("HTTP_METHOD", method.name());
+            headers.put("Content-Type", "application/json");
 
-            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(payload, headers);
-
-            // RestTemplate call is automatically instrumented by the Spring Boot Starter
-            // It will:
-            // 1. Create a client span
-            // 2. Inject the traceparent header for context propagation
-            // 3. Link this span to the upstream service's span (if instrumented)
-            ResponseEntity<Map> upstreamResponse = restTemplate.exchange(
-                url,
-                method,
-                entity,
-                Map.class
+            // Send message to Camel route using ProducerTemplate
+            // The route will:
+            // 1. Receive the message at direct:proxyRequest
+            // 2. Route it to the HTTP endpoint
+            // 3. Return the upstream response as JSON string
+            // All of this is automatically traced by camel-opentelemetry
+            String responseJson = producerTemplate.requestBodyAndHeaders(
+                "direct:proxyRequest",
+                payload,
+                headers,
+                String.class
             );
 
+            // Parse the JSON string response
+            @SuppressWarnings("unchecked")
+            Map<String, Object> upstreamResponse = objectMapper.readValue(responseJson, Map.class);
+
             // Add an event to mark successful completion
-            currentSpan.addEvent("upstream-call-completed");
+            currentSpan.addEvent("camel-route-completed");
 
             // Set the span status to OK
-            // This helps distinguish successful operations from errors in traces
             currentSpan.setStatus(StatusCode.OK);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("service", "backend");
+            response.put("service", "backend-camel");
             response.put("method", method.name());
-            response.put("upstream", upstreamResponse.getBody());
+            response.put("upstream", upstreamResponse);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
+            // Log the full exception for debugging
+            e.printStackTrace();
+
             // Record the exception in the span
-            // This is done automatically by Spring Boot Starter, but we're showing it explicitly
             currentSpan.recordException(e);
 
             // Set the span status to ERROR with a description
-            // This makes errors highly visible in Honeycomb's trace view
-            currentSpan.setStatus(StatusCode.ERROR, "Failed to connect to upstream service");
+            currentSpan.setStatus(StatusCode.ERROR, "Camel route failed to connect to upstream service");
 
             // Add an error event with details
-            currentSpan.addEvent("upstream-call-failed");
+            currentSpan.addEvent("camel-route-failed");
 
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("service", "backend");
+            errorResponse.put("service", "backend-camel");
             errorResponse.put("error", "Failed to connect to upstream service");
             errorResponse.put("message", e.getMessage());
+            errorResponse.put("exceptionType", e.getClass().getName());
             return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(errorResponse);
         }
     }
