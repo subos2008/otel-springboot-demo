@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const BACKENDS = {
   'starter-rest': { url: 'http://localhost:3010', name: 'Spring Boot Starter - REST' },
-  'starter-camel': { url: 'http://localhost:3012', name: 'Spring Boot Starter - Camel/CXF' },
+  'starter-camel-rest': { url: 'http://localhost:3012', name: 'Spring Boot Starter - Camel/CXF REST' },
   'agent-rest': { url: 'http://localhost:3011', name: 'OTEL Java Agent - REST' },
 }
 
@@ -33,7 +33,7 @@ interface ApiResponse {
 }
 
 function App() {
-  const [selectedBackend, setSelectedBackend] = useState<'starter-rest' | 'starter-camel' | 'agent-rest'>('starter-rest')
+  const [selectedBackend, setSelectedBackend] = useState<'starter-rest' | 'starter-camel-rest' | 'agent-rest'>('starter-rest')
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [health, setHealth] = useState<HealthStatus>({
     backend: 'CHECKING',
@@ -161,10 +161,10 @@ function App() {
               {BACKENDS['starter-rest'].name}
             </button>
             <button
-              className={selectedBackend === 'starter-camel' ? 'btn-primary' : 'btn-get'}
-              onClick={() => setSelectedBackend('starter-camel')}
+              className={selectedBackend === 'starter-camel-rest' ? 'btn-primary' : 'btn-get'}
+              onClick={() => setSelectedBackend('starter-camel-rest')}
             >
-              {BACKENDS['starter-camel'].name}
+              {BACKENDS['starter-camel-rest'].name}
             </button>
             <button
               className={selectedBackend === 'agent-rest' ? 'btn-primary' : 'btn-get'}

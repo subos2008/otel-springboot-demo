@@ -62,20 +62,20 @@ services:
     networks:
       - demo-network
 
-  backend-starter-camel:
+  backend-starter-camel-rest:
     build:
-      context: ./backends/springboot-starter/camel-cxf-app
+      context: ./backends/springboot-starter/camel-cxf-rest-app
       dockerfile: Dockerfile.dev
-    container_name: demo-backend-starter-camel
+    container_name: demo-backend-starter-camel-rest
     ports:
       - "3012:3012"
     volumes:
       # Mount source code for hot reload
-      - ./backends/springboot-starter/camel-cxf-app/src:/app/src
+      - ./backends/springboot-starter/camel-cxf-rest-app/src:/app/src
       # Mount pom.xml in case dependencies change
-      - ./backends/springboot-starter/camel-cxf-app/pom.xml:/app/pom.xml
+      - ./backends/springboot-starter/camel-cxf-rest-app/pom.xml:/app/pom.xml
       # Use named volume for Maven cache to speed up builds
-      - maven-repo-backend-starter-camel:/root/.m2
+      - maven-repo-backend-starter-camel-rest:/root/.m2
     depends_on:
       upstream:
         condition: service_healthy
@@ -88,14 +88,14 @@ services:
     environment:
       - UPSTREAM_SERVICE_URL=http://upstream:3002
       # OpenTelemetry configuration for Spring Boot Starter instrumentation
-      - OTEL_SERVICE_NAME=backend-starter-camel
+      - OTEL_SERVICE_NAME=backend-starter-camel-rest
       - OTEL_TRACES_EXPORTER=${OTEL_TRACES_EXPORTER}
       - OTEL_METRICS_EXPORTER=${OTEL_METRICS_EXPORTER}
       - OTEL_LOGS_EXPORTER=${OTEL_LOGS_EXPORTER}
       - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
       - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_EXPORTER_OTLP_PROTOCOL}
       - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
-      - OTEL_RESOURCE_ATTRIBUTES=app.version=backend-starter-camel,instrumentation.type=spring-boot-starter,app.type=camel-cxf,deployment.environment=development,${OTEL_RESOURCE_ATTRIBUTES}
+      - OTEL_RESOURCE_ATTRIBUTES=app.version=backend-starter-camel-rest,instrumentation.type=spring-boot-starter,app.type=camel-cxf-rest,deployment.environment=development,${OTEL_RESOURCE_ATTRIBUTES}
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
     networks:
       - demo-network
@@ -152,7 +152,7 @@ services:
       - ./frontend/vite.config.ts:/app/vite.config.ts
     depends_on:
       - backend-starter-rest
-      - backend-starter-camel
+      - backend-starter-camel-rest
       - backend-agent-rest
     environment:
       - VITE_BACKEND_URL=http://localhost:3010
@@ -167,5 +167,5 @@ networks:
 volumes:
   maven-repo-upstream:
   maven-repo-backend-starter-rest:
-  maven-repo-backend-starter-camel:
+  maven-repo-backend-starter-camel-rest:
   maven-repo-backend-agent-rest:
