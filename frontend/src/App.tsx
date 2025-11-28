@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 
 const BACKENDS = {
-  starter: { url: 'http://localhost:3010', name: 'Spring Boot Starter (Manual)' },
-  agent: { url: 'http://localhost:3011', name: 'OTEL Java Agent (Automatic)' },
+  'starter-rest': { url: 'http://localhost:3010', name: 'Spring Boot Starter - REST' },
+  'starter-camel': { url: 'http://localhost:3012', name: 'Spring Boot Starter - Camel/CXF' },
+  'agent-rest': { url: 'http://localhost:3011', name: 'OTEL Java Agent - REST' },
 }
 
 const UPSTREAM_URL = 'http://localhost:3002'
@@ -32,7 +33,7 @@ interface ApiResponse {
 }
 
 function App() {
-  const [selectedBackend, setSelectedBackend] = useState<'starter' | 'agent'>('starter')
+  const [selectedBackend, setSelectedBackend] = useState<'starter-rest' | 'starter-camel' | 'agent-rest'>('starter-rest')
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [health, setHealth] = useState<HealthStatus>({
     backend: 'CHECKING',
@@ -150,22 +151,26 @@ function App() {
         <div className="card" style={{ gridColumn: 'span 2' }}>
           <h2>Backend Version</h2>
           <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '15px' }}>
-            Both backends are instrumented with OpenTelemetry. Choose which instrumentation approach to test.
+            All backends are instrumented with OpenTelemetry. Choose which version to test.
           </p>
-          <div className="button-group">
+          <div className="button-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
             <button
-              className={selectedBackend === 'starter' ? 'btn-primary' : 'btn-get'}
-              onClick={() => setSelectedBackend('starter')}
-              style={{ flex: 1 }}
+              className={selectedBackend === 'starter-rest' ? 'btn-primary' : 'btn-get'}
+              onClick={() => setSelectedBackend('starter-rest')}
             >
-              {BACKENDS.starter.name}
+              {BACKENDS['starter-rest'].name}
             </button>
             <button
-              className={selectedBackend === 'agent' ? 'btn-primary' : 'btn-get'}
-              onClick={() => setSelectedBackend('agent')}
-              style={{ flex: 1 }}
+              className={selectedBackend === 'starter-camel' ? 'btn-primary' : 'btn-get'}
+              onClick={() => setSelectedBackend('starter-camel')}
             >
-              {BACKENDS.agent.name}
+              {BACKENDS['starter-camel'].name}
+            </button>
+            <button
+              className={selectedBackend === 'agent-rest' ? 'btn-primary' : 'btn-get'}
+              onClick={() => setSelectedBackend('agent-rest')}
+            >
+              {BACKENDS['agent-rest'].name}
             </button>
           </div>
           <p style={{ fontSize: '0.85rem', color: '#888', marginTop: '10px', textAlign: 'center' }}>
