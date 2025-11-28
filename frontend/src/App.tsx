@@ -3,7 +3,7 @@ import axios from 'axios'
 
 const BACKENDS = {
   'starter-rest': { url: 'http://localhost:3010', name: 'Spring Boot Starter - REST' },
-  'starter-camel-rest': { url: 'http://localhost:3012', name: 'Spring Boot Starter - Camel/CXF REST' },
+  'starter-camel-rest': { url: 'http://localhost:3012', name: 'Spring Boot Starter - Camel REST' },
   'agent-rest': { url: 'http://localhost:3011', name: 'OTEL Java Agent - REST' },
 }
 
