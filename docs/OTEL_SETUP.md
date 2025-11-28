@@ -8,12 +8,11 @@ This project uses a centralized `.env` file at the repository root to configure 
 ```
 otel-sprintboot/
 ├── .env                          # Root configuration (Honeycomb settings)
-├── docker-compose.yml            # Production compose file
-└── docker-compose.dev.yml        # Development compose file
+└── docker-compose.yml            # Main compose file with hot reload
 ```
 
 ### Centralized Configuration
-The `.env` file at the repository root is used by both docker-compose files:
+The `.env` file at the repository root is used by docker-compose:
 - ✅ **Single source of truth** - Edit once, applies to all services
 - ✅ **No duplication** - One file for all OpenTelemetry settings
 - ✅ **Git-friendly** - .env is gitignored, .env.example provides template

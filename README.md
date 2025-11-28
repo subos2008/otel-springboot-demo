@@ -18,11 +18,11 @@ otel-sprintboot/
 ## Quick Start
 
 ```bash
-# Production
+# Start all services with hot reload
 docker-compose up --build
 
-# Development (hot reload)
-docker-compose -f docker-compose.dev.yml up --build
+# Or run in detached mode
+docker-compose up -d --build
 
 # Access
 open http://localhost:3000

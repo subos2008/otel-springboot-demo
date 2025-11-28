@@ -6,10 +6,10 @@ This guide explains how to use Docker with hot reload enabled for faster develop
 
 ```bash
 # Start all services with hot reload enabled (from project root)
-docker-compose -f docker-compose.dev.yml up --build
+docker-compose up --build
 
 # Or run in detached mode
-docker-compose -f docker-compose.dev.yml up -d --build
+docker-compose up -d --build
 ```
 
 This will start:
@@ -55,7 +55,7 @@ This will start:
 
 3. **Check logs** - See the reload happen:
    ```bash
-   docker-compose -f docker-compose.dev.yml logs -f backend-agent
+   docker-compose logs -f backend-agent
    ```
    You'll see: `Restarting due to 1 class path change...`
 
@@ -144,7 +144,7 @@ curl http://localhost:3002/actuator/health  # Upstream
 
 ```bash
 # 1. Start services (first time is slow)
-docker-compose -f docker-compose.dev.yml up
+docker-compose up
 
 # 2. Open frontend
 open http://localhost:3000
@@ -179,17 +179,17 @@ open https://ui.honeycomb.io
 ### ⚠️ Requires manual restart:
 - Configuration in `application.properties`
   ```bash
-  docker-compose -f docker-compose.dev.yml restart backend-agent
+  docker-compose restart backend-agent
   ```
 
 ### ❌ Requires rebuild:
 - `pom.xml` dependency changes
   ```bash
-  docker-compose -f docker-compose.dev.yml build backend-agent
+  docker-compose build backend-agent
   ```
 - `package.json` dependency changes
   ```bash
-  docker-compose -f docker-compose.dev.yml build frontend
+  docker-compose build frontend
   ```
 - OpenTelemetry agent JAR updates
 - Dockerfile changes
@@ -214,29 +214,29 @@ The dev setup uses Docker volumes to cache Maven dependencies:
 
 ```bash
 # All services
-docker-compose -f docker-compose.dev.yml logs -f
+docker-compose logs -f
 
 # Specific service
-docker-compose -f docker-compose.dev.yml logs -f backend-agent
-docker-compose -f docker-compose.dev.yml logs -f backend-starter
-docker-compose -f docker-compose.dev.yml logs -f upstream
-docker-compose -f docker-compose.dev.yml logs -f frontend
+docker-compose logs -f backend-agent
+docker-compose logs -f backend-starter
+docker-compose logs -f upstream
+docker-compose logs -f frontend
 
 # Filter for reload events
-docker-compose -f docker-compose.dev.yml logs -f backend-agent | grep -i restart
+docker-compose logs -f backend-agent | grep -i restart
 
 # Filter for OpenTelemetry messages
-docker-compose -f docker-compose.dev.yml logs backend-agent | grep -i otel
+docker-compose logs backend-agent | grep -i otel
 ```
 
 ## Stopping Services
 
 ```bash
 # Stop and remove containers
-docker-compose -f docker-compose.dev.yml down
+docker-compose down
 
 # Stop, remove containers, and clean volumes (fresh start)
-docker-compose -f docker-compose.dev.yml down -v
+docker-compose down -v
 ```
 
 ## Troubleshooting
@@ -245,20 +245,20 @@ docker-compose -f docker-compose.dev.yml down -v
 
 **Check if DevTools is running:**
 ```bash
-docker-compose -f docker-compose.dev.yml logs backend-agent | grep -i devtools
+docker-compose logs backend-agent | grep -i devtools
 ```
 You should see: `LiveReload server is running on port 35729`
 
 **Verify volume mounts:**
 ```bash
-docker inspect demo-backend-agent-dev | grep -A 10 Mounts
+docker inspect demo-backend-agent | grep -A 10 Mounts
 ```
 
 **Force a rebuild:**
 ```bash
-docker-compose -f docker-compose.dev.yml down
-docker-compose -f docker-compose.dev.yml build --no-cache
-docker-compose -f docker-compose.dev.yml up
+docker-compose down
+docker-compose build --no-cache
+docker-compose up
 ```
 
 ### Changes not appearing?
@@ -267,18 +267,18 @@ docker-compose -f docker-compose.dev.yml up
 2. **Check correct file** - Make sure you're editing the mounted directory
 3. **Check logs** - Look for compilation errors:
    ```bash
-   docker-compose -f docker-compose.dev.yml logs -f backend-agent
+   docker-compose logs -f backend-agent
    ```
 4. **Manual restart** - If stuck:
    ```bash
-   docker-compose -f docker-compose.dev.yml restart backend-agent
+   docker-compose restart backend-agent
    ```
 
 ### OpenTelemetry agent not working?
 
 **Check agent is loaded:**
 ```bash
-docker-compose -f docker-compose.dev.yml logs backend-agent | grep -i "opentelemetry"
+docker-compose logs backend-agent | grep -i "opentelemetry"
 ```
 You should see agent initialization messages.
 
@@ -292,7 +292,7 @@ You should see agent initialization messages.
 
 **Verify OTel agent mount:**
 ```bash
-docker inspect demo-backend-agent-dev | grep -A 20 Mounts
+docker inspect demo-backend-agent | grep -A 20 Mounts
 ```
 Should show `/otel` mounted.
 
@@ -308,52 +308,37 @@ lsof -i :3011  # Backend agent
 
 **View detailed logs:**
 ```bash
-docker-compose -f docker-compose.dev.yml up --build
+docker-compose up --build
 ```
 
-## Production vs Development
+## Hot Reload Setup
 
-### Use `docker-compose.yml` (production) when:
-- Running demos
-- Testing the full stack as users will see it
-- No code changes needed
-- Want faster startup time
-- Want optimized Docker images
+This project uses a development-focused setup with hot reload enabled by default:
 
-### Use `docker-compose.dev.yml` (development) when:
-- Actively developing
-- Making frequent code changes
-- Testing iterations quickly
-- Want hot reload
-- Experimenting with instrumentation
+- **Frontend**: Vite dev server with instant HMR
+- **Backend Services**: Spring Boot DevTools with 2-5 second reload
+- **Maven Cache**: Persistent volumes for faster rebuilds
+- **Source Mounting**: Changes on host immediately available in containers
 
-## Comparison
-
-| Feature | docker-compose.yml | docker-compose.dev.yml |
-|---------|-------------------|------------------------|
-| **Startup time** | Fast (~30 sec) | Slow (~2-3 min first time) |
-| **Hot reload** | ❌ No | ✅ Yes |
-| **Code changes** | Requires rebuild | Auto-reloads |
-| **Image size** | Optimized | Large (includes Maven) |
-| **Use case** | Production-like | Development |
+First startup is slower (~2-3 min) as Maven downloads dependencies, but subsequent starts are much faster with cached dependencies.
 
 ## Additional Commands
 
 ```bash
 # Rebuild specific service
-docker-compose -f docker-compose.dev.yml build backend-agent
+docker-compose build backend-agent
 
 # Restart specific service
-docker-compose -f docker-compose.dev.yml restart backend-agent
+docker-compose restart backend-agent
 
 # View running containers
-docker-compose -f docker-compose.dev.yml ps
+docker-compose ps
 
 # Execute command in running container
-docker-compose -f docker-compose.dev.yml exec backend-agent bash
+docker-compose exec backend-agent bash
 
 # Clean everything (nuclear option)
-docker-compose -f docker-compose.dev.yml down -v
+docker-compose down -v
 docker system prune -a
 ```
 
@@ -370,6 +355,5 @@ otel-sprintboot/
 │   └── src/main/java/...         # Upstream data service
 ├── frontend/
 │   └── src/                      # React frontend
-├── docker-compose.yml            # Production
-└── docker-compose.dev.yml        # Development (this guide)
+└── docker-compose.yml            # Main compose file with hot reload
 ```
