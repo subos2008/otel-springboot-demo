@@ -2,6 +2,8 @@
 
 Multi-version Spring Boot microservices demonstrating OpenTelemetry instrumentation patterns.
 
+**Focus:** This project demonstrates tracing for backend services - specifically how to instrument and observe HTTP requests flowing **into** and **out of** backend services. The upstream service is a simple echo service that exists solely to enable tracing of outbound calls from the backends.
+
 ## Structure
 
 ```
@@ -9,8 +11,11 @@ otel-sprintboot/
 ├── frontend/              # React UI with backend selector (port 3000)
 ├── upstream/              # Spring Boot data service (port 3002)
 ├── backends/
-│   ├── sprintboot-starter/   # Spring Boot Starter instrumentation (port 3010)
-│   └── springboot-agent/     # OTEL Java Agent instrumentation (port 3011)
+│   ├── springboot-starter/    # Spring Boot Starter instrumentation
+│   │   ├── rest-app/          # Standard REST (port 3010)
+│   │   └── camel-rest-app/    # Apache Camel routing (port 3012)
+│   └── otel-java-agent/       # OTEL Java Agent instrumentation
+│       └── rest-app/          # Standard REST (port 3011)
 ├── otel/                  # OpenTelemetry Java agent JAR
 └── docs/                  # Documentation
 ```
@@ -28,7 +33,7 @@ docker-compose up -d --build
 open http://localhost:3000
 ```
 
-Frontend includes backend selector to toggle between two OpenTelemetry instrumentation approaches.
+Frontend includes backend selector to toggle between three OpenTelemetry instrumentation approaches.
 
 ## Services
 
@@ -36,34 +41,44 @@ Frontend includes backend selector to toggle between two OpenTelemetry instrumen
 |---------|------|-------------|
 | Frontend | 3000 | React UI with backend selector |
 | Upstream | 3002 | Data service (shared) - echos data back to the backend |
-| Backend Starter | 3010 | Spring Boot Starter (manual instrumentation) |
-| Backend Agent | 3011 | OTEL Java Agent (automatic instrumentation) |
+| Backend Starter REST | 3010 | Spring Boot Starter (manual instrumentation) |
+| Backend Agent REST | 3011 | OTEL Java Agent (automatic instrumentation) |
+| Backend Camel REST | 3012 | Spring Boot Starter with Apache Camel (routing patterns) |
 
 ## Architecture
 
 ```
 Frontend (3000)
     │
-    ├─→ Backend Starter (3010) ─→ Upstream (3002)
-    └─→ Backend Agent (3011) ───→ Upstream (3002)
+    ├─→ Backend Starter REST (3010) ─→ Upstream (3002)
+    ├─→ Backend Agent REST (3011) ───→ Upstream (3002)
+    └─→ Backend Camel REST (3012) ───→ Upstream (3002)
                 │
                 └─→ Honeycomb (traces)
 ```
 
 ## Backend Versions
 
-**Starter** - OpenTelemetry Spring Boot Starter (manual instrumentation):
+**Starter REST** - OpenTelemetry Spring Boot Starter (manual instrumentation):
 - Code-based instrumentation via Spring libraries
 - @WithSpan annotations for custom spans
 - RestTemplateBuilder for context propagation
 - Manual span manipulation with Span API
 - OTLP export to Honeycomb
 
-**Agent** - OpenTelemetry Java Agent (automatic instrumentation):
+**Agent REST** - OpenTelemetry Java Agent (automatic instrumentation):
 - Auto-instrumented HTTP spans
 - Context propagation
 - OTLP export to Honeycomb
 - Zero code changes required
+
+**Camel REST** - Apache Camel with OpenTelemetry Spring Boot Starter:
+- Enterprise Integration Patterns via Apache Camel routes
+- ProducerTemplate for message-based routing
+- Camel HTTP component for HTTP calls
+- camel-opentelemetry for automatic route tracing
+- Direct endpoints for synchronous request/response
+- Per-step span creation for detailed observability
 
 ## Configuration
 
