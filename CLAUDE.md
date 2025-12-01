@@ -15,7 +15,8 @@ otel-sprintboot/
 ├── backends/
 │   ├── springboot-starter/    # Spring Boot Starter instrumentation
 │   │   ├── rest-app/          # Standard REST (port 3010)
-│   │   └── camel-rest-app/    # Apache Camel routing (port 3012)
+│   │   ├── camel-rest-app/    # Apache Camel routing (port 3012)
+│   │   └── camel-rest-app-dev/    # Apache Camel routing - dev copy (port 3013)
 │   └── otel-java-agent/       # OTEL Java Agent instrumentation
 │       └── rest-app/          # Standard REST (port 3011)
 ├── otel/                  # OpenTelemetry Java agent JAR
@@ -28,10 +29,11 @@ otel-sprintboot/
 ```
 Frontend (3000) → Backend Service → Upstream (3002)
                       ↓
-                  [3 versions:]
+                  [4 versions:]
                   - Starter REST (3010)
                   - Agent REST (3011)
                   - Camel REST (3012)
+                  - Camel REST DEV (3013)
 ```
 
 ### Service Details
@@ -62,6 +64,11 @@ Three versions demonstrating different OpenTelemetry instrumentation approaches:
 - Apache Camel 3.11.5 with Spring Boot Starter instrumentation
 - Enterprise Integration Patterns, ProducerTemplate routing, camel-opentelemetry
 - Key files: `BackendController.java`, `ProxyRoute.java`, `BackendApplication.java`
+
+**Camel REST DEV** (`backends/springboot-starter/camel-rest-app-dev/`):
+- Port 3013
+- Dev copy of Camel backend for debugging/development
+- Identical to camel-rest-app but isolated for experimentation
 
 All backends:
 - Proxy `GET/POST/PUT/DELETE /api/frontend_to_backend` to upstream
@@ -96,6 +103,7 @@ open http://localhost:3000
 curl http://localhost:3010/api/frontend_to_backend  # Starter REST
 curl http://localhost:3011/api/frontend_to_backend  # Agent REST
 curl http://localhost:3012/api/frontend_to_backend  # Camel REST
+curl http://localhost:3013/api/frontend_to_backend  # Camel REST DEV
 
 # Check health
 curl http://localhost:3010/actuator/health
@@ -151,10 +159,11 @@ All services use hot reload (Spring DevTools + Vite HMR). Changes to `.java` fil
 ## Quick Reference
 
 **Service URLs:**
-- Frontend: http://localhost:3000 (select between 3 backends)
+- Frontend: http://localhost:3000 (select between 4 backends)
 - Starter REST: http://localhost:3010/api/frontend_to_backend
 - Agent REST: http://localhost:3011/api/frontend_to_backend
 - Camel REST: http://localhost:3012/api/frontend_to_backend
+- Camel REST DEV: http://localhost:3013/api/frontend_to_backend
 - Upstream: http://localhost:3002/api/backend_to_upstream
 
 **Key Documentation:**

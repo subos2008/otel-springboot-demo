@@ -13,7 +13,8 @@ otel-sprintboot/
 ├── backends/
 │   ├── springboot-starter/    # Spring Boot Starter instrumentation
 │   │   ├── rest-app/          # Standard REST (port 3010)
-│   │   └── camel-rest-app/    # Apache Camel routing (port 3012)
+│   │   ├── camel-rest-app/    # Apache Camel routing (port 3012)
+│   │   └── camel-rest-app-dev/    # Apache Camel routing - dev copy (port 3013)
 │   └── otel-java-agent/       # OTEL Java Agent instrumentation
 │       └── rest-app/          # Standard REST (port 3011)
 ├── otel/                  # OpenTelemetry Java agent JAR
@@ -33,7 +34,7 @@ docker-compose up -d --build
 open http://localhost:3000
 ```
 
-Frontend includes backend selector to toggle between three OpenTelemetry instrumentation approaches.
+Frontend includes backend selector to toggle between different OpenTelemetry instrumentation approaches.
 
 ## Services
 
@@ -44,15 +45,17 @@ Frontend includes backend selector to toggle between three OpenTelemetry instrum
 | Backend Starter REST | 3010 | Spring Boot Starter (manual instrumentation) |
 | Backend Agent REST | 3011 | OTEL Java Agent (automatic instrumentation) |
 | Backend Camel REST | 3012 | Spring Boot Starter with Apache Camel (routing patterns) |
+| Backend Camel REST (DEV) | 3013 | Dev copy of Camel backend for debugging |
 
 ## Architecture
 
 ```
 Frontend (3000)
     │
-    ├─→ Backend Starter REST (3010) ─→ Upstream (3002)
-    ├─→ Backend Agent REST (3011) ───→ Upstream (3002)
-    └─→ Backend Camel REST (3012) ───→ Upstream (3002)
+    ├─→ Backend Starter REST (3010) ──────→ Upstream (3002)
+    ├─→ Backend Agent REST (3011) ────────→ Upstream (3002)
+    ├─→ Backend Camel REST (3012) ────────→ Upstream (3002)
+    └─→ Backend Camel REST DEV (3013) ────→ Upstream (3002)
                 │
                 └─→ Honeycomb (traces)
 ```

@@ -4,6 +4,7 @@ import axios from 'axios'
 const BACKENDS = {
   'starter-rest': { url: 'http://localhost:3010', name: 'Spring Boot Starter - REST' },
   'starter-camel-rest': { url: 'http://localhost:3012', name: 'Spring Boot Starter - Camel REST' },
+  'starter-camel-rest-dev': { url: 'http://localhost:3013', name: 'Spring Boot Starter - Camel REST (DEV)' },
   'agent-rest': { url: 'http://localhost:3011', name: 'OTEL Java Agent - REST' },
 }
 
@@ -33,7 +34,7 @@ interface ApiResponse {
 }
 
 function App() {
-  const [selectedBackend, setSelectedBackend] = useState<'starter-rest' | 'starter-camel-rest' | 'agent-rest'>('starter-rest')
+  const [selectedBackend, setSelectedBackend] = useState<'starter-rest' | 'starter-camel-rest' | 'starter-camel-rest-dev' | 'agent-rest'>('starter-rest')
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [health, setHealth] = useState<HealthStatus>({
     backend: 'CHECKING',
@@ -153,7 +154,7 @@ function App() {
           <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '15px' }}>
             All backends are instrumented with OpenTelemetry. Choose which version to test.
           </p>
-          <div className="button-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px' }}>
+          <div className="button-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
             <button
               className={selectedBackend === 'starter-rest' ? 'btn-primary' : 'btn-get'}
               onClick={() => setSelectedBackend('starter-rest')}
@@ -165,6 +166,12 @@ function App() {
               onClick={() => setSelectedBackend('starter-camel-rest')}
             >
               {BACKENDS['starter-camel-rest'].name}
+            </button>
+            <button
+              className={selectedBackend === 'starter-camel-rest-dev' ? 'btn-primary' : 'btn-get'}
+              onClick={() => setSelectedBackend('starter-camel-rest-dev')}
+            >
+              {BACKENDS['starter-camel-rest-dev'].name}
             </button>
             <button
               className={selectedBackend === 'agent-rest' ? 'btn-primary' : 'btn-get'}
