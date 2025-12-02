@@ -6,6 +6,7 @@ const BACKENDS = {
   'starter-camel-rest': { url: 'http://localhost:3012', name: 'Spring Boot Starter - Camel REST' },
   'starter-camel-rest-dev': { url: 'http://localhost:3013', name: 'Spring Boot Starter - Camel REST (DEV)' },
   'agent-rest': { url: 'http://localhost:3011', name: 'OTEL Java Agent - REST' },
+  'agent-camel-rest': { url: 'http://localhost:3014', name: 'OTEL Java Agent - Camel REST' },
 }
 
 const UPSTREAM_URL = 'http://localhost:3002'
@@ -34,7 +35,7 @@ interface ApiResponse {
 }
 
 function App() {
-  const [selectedBackend, setSelectedBackend] = useState<'starter-rest' | 'starter-camel-rest' | 'starter-camel-rest-dev' | 'agent-rest'>('starter-rest')
+  const [selectedBackend, setSelectedBackend] = useState<'starter-rest' | 'starter-camel-rest' | 'starter-camel-rest-dev' | 'agent-rest' | 'agent-camel-rest'>('starter-rest')
   const [response, setResponse] = useState<ApiResponse | null>(null)
   const [health, setHealth] = useState<HealthStatus>({
     backend: 'CHECKING',
@@ -178,6 +179,12 @@ function App() {
               onClick={() => setSelectedBackend('agent-rest')}
             >
               {BACKENDS['agent-rest'].name}
+            </button>
+            <button
+              className={selectedBackend === 'agent-camel-rest' ? 'btn-primary' : 'btn-get'}
+              onClick={() => setSelectedBackend('agent-camel-rest')}
+            >
+              {BACKENDS['agent-camel-rest'].name}
             </button>
           </div>
           <p style={{ fontSize: '0.85rem', color: '#888', marginTop: '10px', textAlign: 'center' }}>

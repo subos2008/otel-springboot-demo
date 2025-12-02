@@ -178,6 +178,46 @@ services:
     networks:
       - demo-network
 
+  backend-agent-camel-rest:
+    build:
+      context: ./backends/otel-java-agent/camel-rest-app
+      dockerfile: Dockerfile.dev
+    container_name: demo-backend-agent-camel-rest
+    ports:
+      - "3014:3014"
+    volumes:
+      # Mount source code for hot reload
+      - ./backends/otel-java-agent/camel-rest-app/src:/app/src
+      # Mount pom.xml in case dependencies change
+      - ./backends/otel-java-agent/camel-rest-app/pom.xml:/app/pom.xml
+      # Mount OTel agent
+      - ./otel:/otel
+      # Use named volume for Maven cache to speed up builds
+      - maven-repo-backend-agent-camel-rest:/root/.m2
+    depends_on:
+      upstream:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3014/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 60s  # Increased for initial Maven build
+    environment:
+      - UPSTREAM_SERVICE_URL=http://upstream:3002
+      - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_SERVICE_NAME=backend-agent-camel-rest
+      - OTEL_TRACES_EXPORTER=${OTEL_TRACES_EXPORTER}
+      - OTEL_METRICS_EXPORTER=${OTEL_METRICS_EXPORTER}
+      - OTEL_LOGS_EXPORTER=${OTEL_LOGS_EXPORTER}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_EXPORTER_OTLP_PROTOCOL}
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
+      - OTEL_RESOURCE_ATTRIBUTES=app.version=backend-agent-camel-rest,instrumentation.type=java-agent,app.type=camel-rest,deployment.environment=development,${OTEL_RESOURCE_ATTRIBUTES}
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+    networks:
+      - demo-network
+
   frontend:
     build: ./frontend
     container_name: demo-frontend
@@ -193,6 +233,7 @@ services:
       - backend-starter-camel-rest
       - backend-starter-camel-rest-dev
       - backend-agent-rest
+      - backend-agent-camel-rest
     environment:
       - VITE_BACKEND_URL=http://localhost:3010
       - VITE_UPSTREAM_URL=http://localhost:3002
@@ -209,3 +250,4 @@ volumes:
   maven-repo-backend-starter-camel-rest:
   maven-repo-backend-starter-camel-rest-dev:
   maven-repo-backend-agent-rest:
+  maven-repo-backend-agent-camel-rest:
