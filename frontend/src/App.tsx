@@ -2,11 +2,36 @@ import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 
 const BACKENDS = {
-  'starter-rest': { url: 'http://localhost:3010', name: 'Spring Boot Starter - REST' },
-  'starter-camel-rest': { url: 'http://localhost:3012', name: 'Spring Boot Starter - Camel REST' },
-  'starter-camel-rest-dev': { url: 'http://localhost:3013', name: 'Spring Boot Starter - Camel REST (DEV)' },
-  'agent-rest': { url: 'http://localhost:3011', name: 'OTEL Java Agent - REST' },
-  'agent-camel-rest': { url: 'http://localhost:3014', name: 'OTEL Java Agent - Camel REST' },
+  'starter-rest': {
+    url: 'http://localhost:3010',
+    name: 'Spring Boot Starter - REST',
+    path: 'backends/springboot-starter/rest-app',
+    type: 'Spring Boot Starter'
+  },
+  'starter-camel-rest': {
+    url: 'http://localhost:3012',
+    name: 'Spring Boot Starter - Camel REST',
+    path: 'backends/springboot-starter/camel-rest-app',
+    type: 'Spring Boot Starter'
+  },
+  'starter-camel-rest-dev': {
+    url: 'http://localhost:3013',
+    name: 'Spring Boot Starter - Camel REST (DEV)',
+    path: 'backends/springboot-starter/camel-rest-app-dev',
+    type: 'Spring Boot Starter'
+  },
+  'agent-rest': {
+    url: 'http://localhost:3011',
+    name: 'OTEL Java Agent - REST',
+    path: 'backends/otel-java-agent/rest-app',
+    type: 'OTEL Java Agent'
+  },
+  'agent-camel-rest': {
+    url: 'http://localhost:3014',
+    name: 'OTEL Java Agent - Camel REST',
+    path: 'backends/otel-java-agent/camel-rest-app',
+    type: 'OTEL Java Agent'
+  },
 }
 
 const UPSTREAM_URL = 'http://localhost:3002'
@@ -155,41 +180,133 @@ function App() {
           <p style={{ fontSize: '0.9rem', color: '#666', marginBottom: '15px' }}>
             All backends are instrumented with OpenTelemetry. Choose which version to test.
           </p>
-          <div className="button-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px' }}>
-            <button
-              className={selectedBackend === 'starter-rest' ? 'btn-primary' : 'btn-get'}
-              onClick={() => setSelectedBackend('starter-rest')}
-            >
-              {BACKENDS['starter-rest'].name}
-            </button>
-            <button
-              className={selectedBackend === 'starter-camel-rest' ? 'btn-primary' : 'btn-get'}
-              onClick={() => setSelectedBackend('starter-camel-rest')}
-            >
-              {BACKENDS['starter-camel-rest'].name}
-            </button>
-            <button
-              className={selectedBackend === 'starter-camel-rest-dev' ? 'btn-primary' : 'btn-get'}
-              onClick={() => setSelectedBackend('starter-camel-rest-dev')}
-            >
-              {BACKENDS['starter-camel-rest-dev'].name}
-            </button>
-            <button
-              className={selectedBackend === 'agent-rest' ? 'btn-primary' : 'btn-get'}
-              onClick={() => setSelectedBackend('agent-rest')}
-            >
-              {BACKENDS['agent-rest'].name}
-            </button>
-            <button
-              className={selectedBackend === 'agent-camel-rest' ? 'btn-primary' : 'btn-get'}
-              onClick={() => setSelectedBackend('agent-camel-rest')}
-            >
-              {BACKENDS['agent-camel-rest'].name}
-            </button>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '20px' }}>
+            {/* Left: Backend Groups */}
+            <div>
+              {/* Spring Boot Starter Group */}
+              <div style={{ marginBottom: '15px' }}>
+                <h3 style={{
+                  fontSize: '0.9rem',
+                  color: '#2c3e50',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  borderLeft: '4px solid #3498db',
+                  paddingLeft: '10px'
+                }}>
+                  Spring Boot Starter
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                  <button
+                    className={selectedBackend === 'starter-rest' ? 'btn-primary' : 'btn-get'}
+                    onClick={() => setSelectedBackend('starter-rest')}
+                    style={{ fontSize: '0.85rem', padding: '8px 10px' }}
+                  >
+                    REST
+                  </button>
+                  <button
+                    className={selectedBackend === 'starter-camel-rest' ? 'btn-primary' : 'btn-get'}
+                    onClick={() => setSelectedBackend('starter-camel-rest')}
+                    style={{ fontSize: '0.85rem', padding: '8px 10px' }}
+                  >
+                    Camel REST
+                  </button>
+                  <button
+                    className={selectedBackend === 'starter-camel-rest-dev' ? 'btn-primary' : 'btn-get'}
+                    onClick={() => setSelectedBackend('starter-camel-rest-dev')}
+                    style={{ fontSize: '0.85rem', padding: '8px 10px' }}
+                  >
+                    Camel DEV
+                  </button>
+                </div>
+              </div>
+
+              {/* OTEL Java Agent Group */}
+              <div>
+                <h3 style={{
+                  fontSize: '0.9rem',
+                  color: '#2c3e50',
+                  marginBottom: '8px',
+                  fontWeight: '600',
+                  borderLeft: '4px solid #9b59b6',
+                  paddingLeft: '10px'
+                }}>
+                  OTEL Java Agent
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+                  <button
+                    className={selectedBackend === 'agent-rest' ? 'btn-primary' : 'btn-get'}
+                    onClick={() => setSelectedBackend('agent-rest')}
+                    style={{ fontSize: '0.85rem', padding: '8px 10px' }}
+                  >
+                    REST
+                  </button>
+                  <button
+                    className={selectedBackend === 'agent-camel-rest' ? 'btn-primary' : 'btn-get'}
+                    onClick={() => setSelectedBackend('agent-camel-rest')}
+                    style={{ fontSize: '0.85rem', padding: '8px 10px' }}
+                  >
+                    Camel REST
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right: Selected Backend Details */}
+            <div style={{
+              padding: '15px',
+              backgroundColor: '#f8f9fa',
+              borderRadius: '5px',
+              border: '1px solid #e0e0e0',
+              height: 'fit-content'
+            }}>
+              <div style={{ marginBottom: '10px' }}>
+                <div style={{ fontWeight: '600', color: '#2c3e50', fontSize: '0.9rem', marginBottom: '5px' }}>
+                  {BACKENDS[selectedBackend].name}
+                </div>
+                <span style={{
+                  padding: '2px 8px',
+                  backgroundColor: BACKENDS[selectedBackend].type === 'Spring Boot Starter' ? '#3498db' : '#9b59b6',
+                  color: 'white',
+                  borderRadius: '3px',
+                  fontSize: '0.7rem',
+                  fontWeight: '600'
+                }}>
+                  {BACKENDS[selectedBackend].type}
+                </span>
+              </div>
+              <div style={{ fontSize: '0.8rem', color: '#555', lineHeight: '1.8' }}>
+                <div><strong>Port:</strong> {new URL(BACKENDS[selectedBackend].url).port}</div>
+                <div style={{ marginTop: '5px' }}>
+                  <strong>Path:</strong>
+                  <div style={{
+                    backgroundColor: '#e8e8e8',
+                    padding: '4px 6px',
+                    borderRadius: '3px',
+                    fontSize: '0.75rem',
+                    fontFamily: 'monospace',
+                    marginTop: '3px',
+                    wordBreak: 'break-all'
+                  }}>
+                    {BACKENDS[selectedBackend].path}
+                  </div>
+                </div>
+                <div style={{ marginTop: '5px' }}>
+                  <strong>URL:</strong>
+                  <div style={{
+                    backgroundColor: '#e8e8e8',
+                    padding: '4px 6px',
+                    borderRadius: '3px',
+                    fontSize: '0.75rem',
+                    fontFamily: 'monospace',
+                    marginTop: '3px'
+                  }}>
+                    {BACKENDS[selectedBackend].url}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <p style={{ fontSize: '0.85rem', color: '#888', marginTop: '10px', textAlign: 'center' }}>
-            Currently using: <strong>{BACKENDS[selectedBackend].url}</strong>
-          </p>
         </div>
 
         {/* Health Dashboard */}
