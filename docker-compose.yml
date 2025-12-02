@@ -11,6 +11,8 @@ services:
       - ./upstream/src:/app/src
       # Mount pom.xml in case dependencies change
       - ./upstream/pom.xml:/app/pom.xml
+      # Mount OTel agent
+      - ./otel:/otel
       # Use named volume for Maven cache to speed up builds
       - maven-repo-upstream:/root/.m2
     healthcheck:
@@ -20,6 +22,15 @@ services:
       retries: 3
       start_period: 60s  # Increased for initial Maven build
     environment:
+      - JAVA_TOOL_OPTIONS=-javaagent:/otel/opentelemetry-javaagent.jar
+      - OTEL_SERVICE_NAME=upstream
+      - OTEL_TRACES_EXPORTER=${OTEL_TRACES_EXPORTER}
+      - OTEL_METRICS_EXPORTER=${OTEL_METRICS_EXPORTER}
+      - OTEL_LOGS_EXPORTER=${OTEL_LOGS_EXPORTER}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=${OTEL_EXPORTER_OTLP_PROTOCOL}
+      - OTEL_EXPORTER_OTLP_HEADERS=${OTEL_EXPORTER_OTLP_HEADERS}
+      - OTEL_RESOURCE_ATTRIBUTES=app.version=upstream,instrumentation.type=java-agent,app.type=upstream,deployment.environment=development,${OTEL_RESOURCE_ATTRIBUTES}
       - SPRING_DEVTOOLS_RESTART_ENABLED=true
     networks:
       - demo-network
