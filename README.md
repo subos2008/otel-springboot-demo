@@ -4,6 +4,12 @@ Multi-version Spring Boot microservices demonstrating OpenTelemetry instrumentat
 
 **Focus:** This project demonstrates tracing for backend services - specifically how to instrument and observe HTTP requests flowing **into** and **out of** backend services. The upstream service is a simple echo service that exists solely to enable tracing of outbound calls from the backends.
 
+## Demo UI
+
+![Frontend Demo](docs/images/frontend-screenshot.png)
+
+The frontend provides an interactive dashboard to test different backend instrumentation approaches, monitor service health, and observe request/response flows.
+
 ## Structure
 
 ```
